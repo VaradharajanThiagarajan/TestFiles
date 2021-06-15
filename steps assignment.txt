@@ -1,0 +1,92 @@
+1) Go to project current directory and issue the below command
+
+https://learn-2.galvanize.com/cohorts/2560/blocks/1164/content_files/units/02_Docker_Intro/02-Docker-Lesson-Part-3.md
+
+docker build -t guestservice:dev .   this is for creating image
+
+docker run -d -p 1000:8080 --name guest1 --rm guestservice:dev  this is for creating a container and executing it
+
+docker run -d -p 1000:8080   -e "SPRING_PROFILES_ACTIVE=docker"  --name guest1 --rm guestbookservice:dev
+
+http://localhost:1000/entries - 
+http://localhost:1000/docs/index.html
+
+2) setup postgres and define database name
+https://learn-2.galvanize.com/cohorts/2560/blocks/1164/content_files/units/07_data/04-postgres-container.md
+(docker pull postgres --- this need not be executed)
+docker stop my-guestpostgres
+docker rm my-guestpostgres22
+docker run --name my-guestpostgres22 -e POSTGRES_PASSWORD=open -p 5432:5432 -d postgres
+docker exec -it my-guestpostgres  /bin/bash
+psql -U postgres
+postgres=# CREATE DATABASE guestentity;
+ (use exit or ctrl+c to come out of POSTGRE database)
+give docker ps - to ensure two containers are running
+one container is application and another container is postgre
+\l - list database
+\c guestentity - get into database
+\dt - list the tables present in the above database
+
+
+create network:
+
+docker network create --driver bridge network1
+docker run --name my-guestpostgres -p 5432:5432 --network network1  -e POSTGRES_PASSWORD=open  -e POSTGRES_DB=guestentity   -d  postgres 
+docker run --name guest1 --network network1  -e PORT=8080  -e SPRING_PROFILES_ACTIVE=docker -p 9000:8080  -d guestservice:dev
+
+
+3)
+Add a new file named heroku.yml to your project.
+
+https://learn-2.galvanize.com/cohorts/2560/blocks/1164/content_files/units/04_Deployment/06-deployment-zoo.md
+
+build:
+    docker: 
+        web: Dockerfile
+
+create new app in heroku ( https://www.heroku.com/)
+
+
+https://dashboard.heroku.com/apps/guestbookentry/resources - add the postgres to heroku
+https://dashboard.heroku.com/apps/guestbookentry/settings - add the spring profile variable 
+
+SPRING_PROFILES_ACTIVE = heroku
+
+heroku git:remote -a guestbookentry
+
+$ heroku login
+$ heroku container:login
+$ heroku container:push web
+$ heroku container:release web
+
+{"name": "Pamu","comments": "My age is 40"}
+    
+
+
+4) add the spring configuration for database in heroku
+
+@Configuration
+@Profile("heroku")
+public class DatabaseConfig {
+
+    @Bean
+    public DataSource dataSource() throws URISyntaxException {
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+
+        String username = dbUri.getUserInfo().split(":")[0];
+        String password = dbUri.getUserInfo().split(":")[1];
+        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
+        return DataSourceBuilder.create()
+            .url(dbUrl)
+            .username(username)
+            .password(password)
+            .build();
+    }
+}
+
+
+
+
+
+
