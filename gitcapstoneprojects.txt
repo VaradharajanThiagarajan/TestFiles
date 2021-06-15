@@ -1,0 +1,237 @@
+echo "# Invoicify" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M master
+git remote add origin https://github.com/VaradharajanThiagarajan/Invoicify.git
+git push -u origin master
+
+git remote add origin https://github.com/VaradharajanThiagarajan/Invoicify.git
+git branch -M master
+git push -u origin master
+
+
+git branch -m master main
+git fetch origin
+git branch -u origin/main main
+git remote set-head origin -a
+
+git branch -d “feature/company”
+
+
+***** company name
+
+if the company name exists, then 
+COMPANY/{id} 
+new dto
+{new company details as object}
+
+
+invoicebycompany/{CTS}
+
+findbycompanyname and get the company id
+findbycompanyid from the invoice table and get the invoice details
+
+invoicebynum/{invoiceid} - 
+findbyinvoiceid
+
+invoicebynum/{invoiceid}
+findbyinvoiceid
+patch
+
+no company exist
+company exist but no invoices
+invoice exists but no items 
+
+if (invoiceRepository.findByCompanyCompanyId(compId)==null)
+
+
+
+
+
+***8
+
+
+heroku API key - 7acce302-fd14-42a8-85a4-ae9d4b0d5167
+
+company, item, invoice
+
+1)
+one invoice can have many items
+given item can be mapped to many invoices.
+
+This is many to many
+
+
+2)
+one company can have many invoices
+one invoice is mapped only to one company
+
+
+Item and Invoices are many to many
+Company and Invoices are 
+
+
+item id
+
+comp
+
+  invoiceEntity.getItem()
+                             .stream().map(itemEntity -> 
+                            {return new ItemDto(itemEntity.getDescription(),
+                                    itemEntity.getRateHourBilled(),
+                                    itemEntity.getRatePrice(),
+                                    itemEntity.getFlatPrice());}).collect(Collectors.toList()));
+
+                            })
+
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+
+{"companyName":"CTS","author":"author2","paid":"True","itemsDto":
+[{"description":"Installation","rateHourBilled":"10","ratePrice":"25.00","flatPrice":"50.00"},
+{"description":"Service","rateHourBilled":"5","ratePrice":"10.00","flatPrice":"20.00"}]}
+
+1)
+company json post-
+{"name":"CTS","address":"Test","city":"chennai","state":"TamilNadu","zip":"123456","contactName":"Mike","contactTitle":"Raj","contactPhoneNumber":"9055981756"}
+
+2)
+invoice json post -
+
+{"companyName":"CTS","author":"author1","paid":"True","itemsDto":
+[{"description":"Installation","rateHourBilled":"10","ratePrice":"25.00","flatPrice":"50.00"},
+{"description":"Service","rateHourBilled":"5","ratePrice":"10.00","flatPrice":"20.00"}]}
+
+
+********************************************
+
+@Test
+	public void fetchInvoiceByCompanyNameTest() throws Exception {
+
+		CompanyDto companyObject1 = new CompanyDto("Test", "Address1", "city1", "state1", "91367", "Mike", "CEO", "800-800-800");
+
+		mockMvc.perform(post("/company")
+				.content(objectMapper.writeValueAsString(companyObject1))
+				.contentType(MediaType.APPLICATION_JSON)
+		).andExpect(status().isCreated());
+
+
+		var itemsDto = Arrays.asList(
+				new ItemDto("Description", 10, 14.50F, 60F)
+		);
+		//var invoiceDto = new InvoiceDto("Test", "test", false, itemsDto);
+		var invoiceDto = new InvoiceDto("Test", "test", false, itemsDto);
+		var invoiceDto2 = new InvoiceDto("Test", "rest", false, itemsDto);
+
+		this.mockMvc.perform(MockMvcRequestBuilders.post("/invoice")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(this.objectMapper.writeValueAsString(invoiceDto)))
+				.andExpect(MockMvcResultMatchers.status().isCreated())
+				.andExpect(MockMvcResultMatchers.jsonPath("$").isNumber())
+						;
+
+		this.mockMvc.perform(MockMvcRequestBuilders.post("/invoice")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(this.objectMapper.writeValueAsString(invoiceDto2)))
+				.andExpect(MockMvcResultMatchers.status().isCreated())
+				.andExpect(MockMvcResultMatchers.jsonPath("$").isNumber())
+		;
+
+		mockMvc.perform(get("/invoice/Test")
+		).andExpect(status().isOk())
+		.andExpect(jsonPath("[0].invoiceNum").value(2L))
+		.andExpect(jsonPath("[1].invoiceNum").value(3L))
+		;
+
+	}
+
+**************************
+
+
+    public List<InvoiceDto> fetchAllInvoicesByCompany(String companyName) {
+        Company companyEntity = companyRepository.findByName(companyName);
+        Long compId = companyEntity.getCompanyId();
+   
+        return invoiceRepository.findByCompanyCompanyId(compId)
+                .stream()
+                .map(invoiceEntity -> {
+                    return new InvoiceDto(
+                            invoiceEntity.getInvoiceId(),
+                            companyName,
+                            invoiceEntity.getAuthor(),
+                            invoiceEntity.getPaid(),
+                            itemsDtoList
+
+                    );
+                })
+                .collect(Collectors.toList());
+
+    }
+
+
+find al invoice by company error messages
+Company has invoice but page number is invalid.
+Company Does not have Invoice.
+No Company by that name.
+Company Does not have any Unpaid Invoice.
+Company has Unpaid invoice but page number is invalid.
+
+Get-Company-Unpaid-Invoice-ButWithAllInvoicesPaid
+
+item - description, hours used, flatrate, variable rate
+
+item:[{description:1fjfjjf,rate:0.0,flatprice:0.0,variablerate:0.0}] - if they wanted to make the program to default all three prices to zero?
+ 
+
+********************
+
+List<Invoice> findByCompanyCompanyId(Long compId);
+
+****************************
+
+@GetMapping("{companyName}")
+	public ResponseEntity<?> getAllInvoicesByCompany(@PathVariable String companyName) {
+
+		if (companyName == null) {
+			return new ResponseEntity<>("Enter valid Company name.", HttpStatus.NO_CONTENT);
+		} else {
+			return new ResponseEntity<>(invoiceService.fetchAllInvoicesByCompany(companyName), HttpStatus.OK);
+		}
+	}
+
+invoiceEntity.getItem() - this is entity list
+convert this to item list - how?
+
+invoiceEntity.getItem().stream().map(itemEnt-> { return new ItemDto(itemEnt.getDescription,itemEnt.getRateHourBilled,itemEnt.getRatePrice,itemEnt.getFlatPrice);}).
+.collect(Collectors.toList())
+
+
+what we learnt and what we acheieved/value of our learning\
+
+Class System
+{
+
+int a;
+
+println{
+}
+}
+
+System.a.
+
+non-static method can access the static variable
+but static method cannot access the non-static variable
+
+
+
+
+
+
+
+
