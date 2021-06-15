@@ -1,0 +1,20 @@
+docker push varadharajanthiagarajan/firstdockrepo:tagname
+
+docker build -t zooservice:postgresver2 .
+
+docker run -d -p 1000:8080 --name zoopostgres1 --rm zooservice:postgresver1
+
+
+docker run -d -p 1000:8080 --name zoopostgres1 --rm zooservice:postgresver1
+
+docker exec -it my-postgres /bin/bash
+
+
+open - password, postgres - username
+
+heroku git:remote -a zooent
+
+postgres://bbxkrlcgqxqxeo:96a55ff97cc709a528e77a56378ed4f1268d573d3066accc14575dfc2b1e4a29@ec2-54-235-108-217.compute-1.amazonaws.com:5432/d1lleq2t8ifsvh
+postgres://bbxkrlcgqxqxeo:96a55ff97cc709a528e77a56378ed4f1268d573d3066accc14575dfc2b1e4a29@ec2-54-235-108-217.compute-1.amazonaws.com:5432/d1lleq2t8ifsvh
+
+1) docker build -t zooservice:postgresver2 .
