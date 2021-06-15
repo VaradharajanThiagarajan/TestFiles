@@ -1,0 +1,287 @@
+1) go to https://start.spring.io/ and add below 4 dependencies
+
+spring web
+spring JPA
+lombok
+h2 DATABASE
+spring RESTDOC
+spring postgres
+
+select gradle and java 8
+
+extract project zip and then copy the folder into Ideaprojectsfolder
+
+2) also create new empty repository in GITHUB
+
+3) now in the project folder under Intellij folder right click and open git bash
+
+git init
+git remote add origin https://github.com/VaradharajanThiagarajan/SelfGuest.git
+---git branch -M master---
+git add .
+git commit -m "initial commit";
+git push -u origin master
+
+4) after basic testing using array list datastructure
+create the servicetest, service ,repostirory ,entity , DTO changes
+
+5) fetch all method in service test, service, entity,
+
+6) introduce the service in the controller
+
+7) use the website to make changes in build.gradle and 
+https://learn-2.galvanize.com/cohorts/2560/blocks/1164/content_files/units/04_Deployment/07-spring_rest_docs.md
+
+8) add below annotation in the IT Test method and also additional lines for do documentation
+
+@AutoConfigureRestDocs // New Annotation
+
+and 
+
+https://github.com/whediger/library-demo-02-2021/commit/d1a1a135bb1e0b743f3f26b8be49fb58c6829a5a
+
+
+9) containerise the spring boot application - Add the dockerfile in the project root folder
+Dockerfile.
+
+10) go to project current directory and issue the below command
+
+https://learn-2.galvanize.com/cohorts/2560/blocks/1164/content_files/units/02_Docker_Intro/02-Docker-Lesson-Part-3.md
+
+docker build -t guestservice:dev .   this is for creating image
+
+docker build -t guestbookservice:dev .   
+
+docker run -d -p 1000:8080 --name guest1 --rm guestservice:dev  this is for creating a container and executing it
+
+docker run -d -p 1000:8080 -e ipaddress=172.17.0.2  -e "SPRING_PROFILES_ACTIVE=docker"  --name guest1 --rm guestservice:dev
+
+docker run -d -p 1000:8080   -e "SPRING_PROFILES_ACTIVE=docker"  --name guest1 --rm guestbookservice:dev
+
+docker run -d -p 1000:8080 -e ipaddress=$ipaddress  -e "SPRING_PROFILES_ACTIVE=docker"  --name guest1 --rm guestservice:dev
+$ipaddress123 = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' my-guestpostgres
+
+
+docker run -d -p 1000:8080 -e ipaddress=docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' my-guestpostgres --name guest1 --rm guestservice:dev
+
+
+localhost:1000/entries
+http://localhost:1000/docs/index.html
+
+11) setup postgres and define database name
+
+https://learn-2.galvanize.com/cohorts/2560/blocks/1164/content_files/units/07_data/04-postgres-container.md
+
+docker pull postgres --- this need not be executed
+
+docker stop my-guestpostgres
+docker rm my-guestpostgres
+
+docker run --name my-guestpostgres22 -e POSTGRES_PASSWORD=open -p 5432:5432 -d postgres
+docker exec -it my-guestpostgres22  /bin/bash
+psql -U postgres
+postgres=# CREATE DATABASE guestentity;
+ use exit or ctrl+c to come out of POSTGRE database
+
+give docker ps - to ensure two containers are running
+one container is application
+another container is postgre
+
+\l - list database
+\c guestentity - get into database
+\dt - list the tables present in the above database
+
+************network concepts****
+in the docker file - create below - container name and DB name
+spring.datasource.url=jdbc:postgresql://my-playlistpostgres:5432/guestentity
+
+docker pull postgres
+docker network create --driver bridge playlistnetwork
+docker run --name my-playlistpostgres --network playlistnetwork  -e POSTGRES_PASSWORD=open -e POSTGRES_DB=playlistdb -p 5432:5432  -d  postgres
+docker build -t playlistservice:dev .
+docker run --name playlist1   --network playlistnetwork  -e PORT=8080  -e SPRING_PROFILES_ACTIVE=docker   -p 1000:8080  -d  playlistservice:dev
+
+
+Capstone projects
+```shell
+     $ cd Invoicify
+     $ docker build -t invoicify-image .
+     $ docker network create --driver bridge invoicifynetwork
+       docker run --name invoice-pg --network invoicifynetwork  -e POSTGRES_PASSWORD=open -e POSTGRES_DB=invoice-db -p 5432:5432  -d  postgres
+     $ docker run -d -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=open -e POSTGRES_DB=postgres --network invoicify_network --name postgres postgres
+     $ docker run -d -p 8081:8080 -e SPRING_PROFILES_ACTIVE=localpg --network invoicify_network --name invoicify_service invoicify_service
+     ```
+**************************************
+
+docker network create --driver bridge invoicifynetwork
+docker run --name invoice-pg --network invoicifynetwork  -e POSTGRES_PASSWORD=open -e POSTGRES_DB=invoice-db -p 5432:5432  -d  postgres
+docker build -t invoicify-image .
+docker run  --name invoicify-service  --network invoicifynetwork -e PORT=8080  -e SPRING_PROFILES_ACTIVE=networkPg  -p 1000:8080  -d invoicify-image
+
+docker exec -it invoice-pg  /bin/bash
+psql -U postgres
+postgres=# CREATE DATABASE invoice-db;
+ use exit or ctrl+c to come out of POSTGRE database
+
+Refresh
+----------
+docker stop invoicify-service  invoice-pg
+docker rm invoicify-service invoice-pg
+docker rmi invoicify-image
+
+docker run --name invoice-pg --network invoicifynetwork  -e POSTGRES_PASSWORD=open -e POSTGRES_DB=invoice-db -p 5432:5432  -d  postgres
+docker build -t invoicify-image .
+docker run  --name invoicify-service  --network invoicifynetwork -e PORT=8080  -e SPRING_PROFILES_ACTIVE=networkPg  -p 1000:8080  -d invoicify-image
+**docker run  --name invoicify-service  --network invoicifynetwork -e SPRING_PROFILES_ACTIVE=networkPg  -p 1000:8080  -d invoicify-image
+    
+
+
+12) modify the spring boot  application properties file to use the post-gre instead of H2
+
+user SRC/MAIN/Resources folder add the application-docker.properties file
+also add the SRC/MAIN/Resources folder - with application.properties as empty file
+
+spring.datasource.hikari.connectionTimeout=20000
+spring.datasource.hikari.maximumPoolSize=5
+spring.datasource.url=jdbc:postgresql://172.17.0.2:5432/guestentity
+spring.datasource.username=postgres
+spring.datasource.password=open
+
+spring.jpa.hibernate.ddl-auto=create
+
+Also in the build.gradle dependency add the postgre sql dependency library
+runtimeOnly 'org.postgresql:postgresql'
+
+13) rebuilding the image file with updated postgres application.properties file
+
+docker stop container id
+docker stop guest1
+
+docker run -d -p 1000:8080 -e "SPRING_PROFILES_ACTIVE=docker" --name guest1 --rm guestservice:dev
+docker run -d -p 1000:8080 --name guest1 --rm guestservice:dev
+
+docker run -d -p 2000:8080 -e PORT=8080 -e "SPRING_PROFILES_ACTIVE=docker" --name guest2 --rm guestservice:dev
+docker run -d -p 1000:8080 --name guest1 --rm guestservice:dev
+
+
+docker rmi image name
+(docker rmi guestservice:dev)
+docker build -t guestservice:dev .
+docker run -d -p 1000:8080 --name guest1 --rm guestservice:dev
+docker run -d -p 2000:8080 --name guest2 --rm guestservice:dev
+docker run -d -p 3000:8080 --name guest3 --rm guestservice:dev
+
+localhost:1000/entries
+http://localhost:1000/docs/index.html
+
+
+14)
+
+Add a new file named heroku.yml to your project.
+
+https://learn-2.galvanize.com/cohorts/2560/blocks/1164/content_files/units/04_Deployment/06-deployment-zoo.md
+
+build:
+    docker: 
+        web: Dockerfile
+
+create new app in heroku ( https://www.heroku.com/)
+
+
+https://dashboard.heroku.com/apps/guestbookentry
+https://dashboard.heroku.com/apps/guestbookentry/resources - add the postgres to heroku
+https://dashboard.heroku.com/apps/guestbookentry/settings - add the spring profile variable 
+
+SPRING_PROFILES_ACTIVE = heroku
+playlistservice123
+
+heroku git:remote -a playlistservice123
+
+$ heroku login
+$ docker ps
+$ heroku container:login
+$ heroku container:push web
+$ heroku container:release web
+
+heroku git:remote -a guestbookappservice
+
+  {"name": "Pamu","comments": "My age is 40"}
+    
+
+
+15) add the spring configuration for database in heroku
+
+@Configuration
+@Profile("heroku")
+public class DatabaseConfig {
+
+    @Bean
+    public DataSource dataSource() throws URISyntaxException {
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+
+        String username = dbUri.getUserInfo().split(":")[0];
+        String password = dbUri.getUserInfo().split(":")[1];
+        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
+        return DataSourceBuilder.create()
+            .url(dbUrl)
+            .username(username)
+            .password(password)
+            .build();
+    }
+}
+
+
+16) open the app entries
+
+https://guestbookentry.herokuapp.com/entries
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+I was just asking based on your OOPS experience  on real production .. like how they define the classes and relationship between the classes - like the concept of association (aggregation/composition) . 
+for example if they shopping cart should contain list of items .
+ we define  class Item { string name}, class ShoppingCart {  List<Item> itemList}..
+
+$ipaddress123 = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' my-guestpostgres
+
+
+
+docker run -d -p 1000:8080 -e SPRING_PROFILES_ACTIVE=docker  --name guest1 --rm guestservice:dev
+docker run -d -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=test" --name my-app:latest
+
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' my-guestpostgres
+
+class playlist
+{
+
+
+string name
+string song
+
+}
+
+s
+
+
+
+
+
+
+
+
+
