@@ -1,0 +1,15 @@
+git remote add origin https://github.com/VaradharajanThiagarajan/HeroesApplication1.git
+
+
+git branch -M master
+git push -u origin master
+
+http://localhost:8080/addAnimals
+
+http://localhost:8080/listAnimals?mood="happy"&animType="walking"
+
+{"name":"dog","animalType":"walking","mood":"happy"}
+
+git remote add origin https://github.com/VaradharajanThiagarajan/PracticeTest1.git
+git branch -M master
+git push -u origin master
